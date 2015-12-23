@@ -9,5 +9,7 @@ RUN pip install -r requirements.txt
 COPY . /usr/src/app
 
 EXPOSE 8001
+EXPOSE 8002
+EXPOSE 8003
 
 CMD ["python","broker.py" ]

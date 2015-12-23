@@ -75,7 +75,7 @@ def handle_connection(registry,connection,address):
         
     
 if __name__=='__main__':
-    server_port=random.randint(1024,9001)
+    server_port=8001
     print "Starting Listen...",server_port
     tcp_broker=MyTCPBroker('',server_port,Registry())
     tcp_broker.run(6)
