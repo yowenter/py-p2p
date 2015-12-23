@@ -70,6 +70,7 @@ def handle_connection(registry,connection,address):
         data = connection.recv(1024)
         print "received",data 
         connection.sendall("I AM SERVER.\n")
+        time.sleep(3)
         registry.notify_all(data)
         
     
