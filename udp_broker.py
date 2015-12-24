@@ -1,7 +1,7 @@
 import socket
 import json
 import time
-from stdnum.us import ptin
+
 
 class Registry:
     def __init__(self,_socket=None):

@@ -16,10 +16,11 @@ class Node:
     
     def connect_server(self):
         while True:
-            self._socket.connect(self._broker_address)
+#             self._socket.connect(self._broker_address)
             self._socket.sendto(json.dumps({"from":"node","data":"ping"}),self._broker_address)
             self._local_address=self._socket.getsockname()
             self._public_address=None
+            print "local_address ",self._local_address
             self._socket.sendto(json.dumps({"from":"node","private":self._local_address}),self._broker_address)
             data,address=self._socket.recvfrom(2048)
             if address[0]==self._broker_address[0]:
@@ -56,7 +57,7 @@ class Node:
                     print "received ",data,address
 
 if __name__=='__main__':
-    n=Node(SERVER_IP,SERVER_PORT,8892)   
+    n=Node(SERVER_IP,SERVER_PORT,9102)   
     n.connect_server()       
                     
             
