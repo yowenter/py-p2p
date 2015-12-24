@@ -51,6 +51,7 @@ class Registry:
     def update_node(self,public,private_addr):
         i=self.find_node_index(public)
         self._nodes[i]['private']=tuple(private_addr)
+        print "Node updated ",self._nodes[i]
         self.heartbeat_node(public)
              
 
