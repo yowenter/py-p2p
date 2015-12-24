@@ -3,8 +3,13 @@ import os
 import json
 import time
 import gevent
+import random
+import gevent.monkey
+
+gevent.monkey.patch_all()
+
 SERVER_IP=os.getenv("SERVER_IP")
-SERVER_PORT=os.getenv("SERVER_PORT")
+SERVER_PORT=os.getenv("SERVER_PORT",8001)
 
 
 class Node:
@@ -15,16 +20,21 @@ class Node:
         self._public_address=None
         self._local_address=(self._get_ip(),local_port)
         self._connect_another_node=False
+        print "Node init finished."
         
     def _get_ip(self):
-        public_host=socket.gethostbyname('github.com')
+        print "Fetching self ip ."
+        public_host=socket.gethostbyname('baidu.com')
         s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((public_host,80))
+        print "Successfully get self ip ."
         return s.getsockname()[0]
    
         
     
     def connect_server(self):
+        gevent.spawn(lambda :ping_to_server(self))
+        
         while True:
             if not self._connect_another_node:
                 self._socket.sendto(json.dumps({"from":"node","data":"join"}),self._broker_address)
@@ -68,10 +78,11 @@ class Node:
                 self._socket.sendto("Nice to hear from U .  \nFrom:%s:%s"%(str(self._local_address),str(self._public_address)),address)
                 self._connect_another_node=True
             
-            gevent.spawn(lambda :ping_to_server(self))
+            
 
 
 def ping_to_server(node):
+    print "Start to  ping server every few seconds."
     while True:
         node._socket.sendto(json.dumps({"from":"node","data":"ping"}),node._broker_address)
         time.sleep(6)
@@ -79,7 +90,9 @@ def ping_to_server(node):
         
         
 if __name__=='__main__':
-    n=Node(SERVER_IP,SERVER_PORT,4462)   
+    local_port=random.randint(2048,60000)
+    print "start node",local_port
+    n=Node(SERVER_IP,SERVER_PORT,local_port)   
     n.connect_server()       
                     
             

@@ -1,6 +1,9 @@
 import socket
 import json
 import time
+import gevent.monkey
+
+gevent.monkey.patch_all()
 
 
 class Registry:
@@ -48,6 +51,7 @@ class MyUDPBroker:
         self.registry._socket=self._socket
         
     def run(self):
+        gevent.spawn(lambda:ping_to_nodes(self))
         while True:
             data,address=self._socket.recvfrom(1024)
             self._socket.sendto(json.dumps({"data":"pong","from":"server","address":address}),address)
@@ -65,7 +69,13 @@ class MyUDPBroker:
             nodes={"nodes": self.registry._addrs}
             self.registry.notify_all(json.dumps(nodes))
             
-            
+
+def ping_to_nodes(broker):
+    print "Start to ping nodes every few seconds."
+    while True:
+        broker.registry.notify_all(json.dumps({"from":"server","data":"ping"}))
+        time.sleep(6)
+        
             
 if __name__=='__main__':
     server_port=8001
