@@ -9,7 +9,7 @@ gevent.monkey.patch_all()
 
 
 class Registry:
-    def __init__(self,_socket=None):
+    def __init__(self):
         self._registry=[]
     
     def notify_all(self,data):
