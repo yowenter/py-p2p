@@ -92,7 +92,7 @@ def publish_nodes(broker):
     while True:
         nodes={"nodes": broker.registry._nodes}
         broker.registry.notify_all(json.dumps(nodes)) 
-        time.sleep(120)
+        time.sleep(60)
            
             
 if __name__=='__main__':

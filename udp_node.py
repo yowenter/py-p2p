@@ -8,8 +8,8 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-SERVER_IP=os.getenv("SERVER_IP","192.168.1.5")
-SERVER_PORT=os.getenv("SERVER_PORT",8001)
+SERVER_IP=os.getenv("SERVER_IP","107.170.255.192")
+SERVER_PORT=os.getenv("SERVER_PORT",8900)
 
 
 class Node:
@@ -39,7 +39,7 @@ class Node:
                 self._socket.sendto(json.dumps({"from":"node","data":"join"}),self._broker_address)
                 
                 self._socket.sendto(json.dumps({"from":"node","private":self._local_address}),self._broker_address)
-            
+                time.sleep(5)
             data,address=self._socket.recvfrom(2048)
             if address[0]==self._broker_address[0]:
                 try:
