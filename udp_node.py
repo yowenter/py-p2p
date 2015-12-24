@@ -8,8 +8,8 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-SERVER_IP=os.getenv("SERVER_IP","107.170.255.192")
-SERVER_PORT=os.getenv("SERVER_PORT",8900)
+SERVER_IP=os.getenv("SERVER_IP","192.168.1.5")
+SERVER_PORT=os.getenv("SERVER_PORT",8001)
 
 
 class Node:
@@ -56,6 +56,7 @@ class Node:
                         self._public_address=tuple(data['address'])
 
                     if data.get("nodes"):
+                        
                         if len(data['nodes'])>1:
                             print "Get nodes:",data['nodes']
                             for n in data['nodes']:

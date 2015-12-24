@@ -38,6 +38,7 @@ class Registry:
         _node=self.find_node_index(public_address)
         if _node is not None:
             self.heartbeat_node(public_address)
+            return
 
         print "new node added .",public_address,private_address
         self._nodes.append({"public":public_address,'private':private_address,"latest_heartbeat":int(time.time())})
@@ -64,7 +65,7 @@ class MyUDPBroker:
         
     def run(self):
         gevent.spawn(lambda:ping_to_nodes(self))
-        gevent.spawn(lambda:publish_nodes(self))
+#         gevent.spawn(lambda:publish_nodes(self))
         
         while True:
             data,address=self._socket.recvfrom(1024)
@@ -74,6 +75,8 @@ class MyUDPBroker:
                 d=json.loads(data)
                 if d.get("data")=='join' and d.get("from")=='node':
                     self.registry.add_node(address)
+                    nodes={"nodes": self.registry._nodes}
+                    self.registry.notify_all(json.dumps(nodes)) 
                 if d.get("private"):
                     self.registry.update_node(address,d['private'])
             except Exception as e:
@@ -87,13 +90,14 @@ def ping_to_nodes(broker):
     while True:
         broker.registry.notify_all(json.dumps({"from":"server","data":"ping"}))
         time.sleep(6)
-    
-def publish_nodes(broker):
-    while True:
-        nodes={"nodes": broker.registry._nodes}
-        broker.registry.notify_all(json.dumps(nodes)) 
-        time.sleep(60)
-           
+     
+# def publish_nodes(broker):
+#     print "start publish nodes every few seconds"
+# #     while True:
+#     nodes={"nodes": broker.registry._nodes}
+#     broker.registry.notify_all(json.dumps(nodes)) 
+# #     time.sleep(60)
+#        
             
 if __name__=='__main__':
     server_port=8001
