@@ -8,8 +8,8 @@ import gevent.monkey
 
 gevent.monkey.patch_all()
 
-SERVER_IP=os.getenv("SERVER_IP")
-SERVER_PORT=os.getenv("SERVER_PORT",8001)
+SERVER_IP=os.getenv("SERVER_IP","107.170.255.192")
+SERVER_PORT=os.getenv("SERVER_PORT",8900)
 
 
 class Node:
@@ -77,6 +77,7 @@ class Node:
 
                 self._socket.sendto("Nice to hear from U .  \nFrom:%s:%s"%(str(self._local_address),str(self._public_address)),address)
                 self._connect_another_node=True
+                time.sleep(3)
             
             
 

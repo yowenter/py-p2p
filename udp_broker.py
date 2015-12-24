@@ -8,39 +8,50 @@ gevent.monkey.patch_all()
 
 class Registry:
     def __init__(self,_socket=None):
-        self._addrs=[]
+        self._nodes=[]
         self._socket=_socket
     
     def notify_all(self,data):
-        for i,r in enumerate(self._addrs):
-            try:
-                self._socket.sendto(data,r['public'])
-            except Exception as e:
-                print "notify address failure",r,str(e)
-                self._addrs.pop(i)
-                
-                    
+        for n in enumerate(self._nodes):
+            self._socket.sendto(data,n['public'])
+            
     
-
+    def is_node_alive(self,public_address):
+        i=self.find_node_index(public_address)
+        if i is not None:
+            node=self._nodes[i]
+            if int(time.time())-node.get("latest_heartbeat",0) <3600:
+                return True
+            else:
+                self._nodes.pop(i)
+                print "node dead",node
+                return False
+        return False
+    
+    def heartbeat_node(self,public_address):
+        i=self.find_node_index(public_address)
+        if i is not None:
+            self._nodes[i]['latest_heartbeat']=int(time.time())
+             
                 
     def add_node(self,public_address,private_address=None):
         _node=self.find_node_index(public_address)
         if _node is not None:
-            return
+            self.heartbeat_node(public_address)
 
         print "new node added .",public_address,private_address
-        self._addrs.append({"public":public_address,'private':private_address})
+        self._nodes.append({"public":public_address,'private':private_address,"latest_heartbeat":int(time.time())})
         
     
     def find_node_index(self,public_address):
-        for i,r in enumerate(self._addrs):
+        for i,r in enumerate(self._nodes):
             if str(r['public'][0])==str(public_address[0]) and str(r['public'][1])==str(public_address[1]):
                 return i
             
     def update_node(self,public,private_addr):
         i=self.find_node_index(public)
-        self._addrs[i]['private']=tuple(private_addr)
-        
+        self._nodes[i]['private']=tuple(private_addr)
+        self.heartbeat_node(public)
              
 
 class MyUDPBroker:
@@ -55,6 +66,7 @@ class MyUDPBroker:
         while True:
             data,address=self._socket.recvfrom(1024)
             self._socket.sendto(json.dumps({"data":"pong","from":"server","address":address}),address)
+            self._registry.heartbeat_node(address)
             try:
                 d=json.loads(data)
                 if d.get("data")=='join' and d.get("from")=='node':
@@ -64,9 +76,8 @@ class MyUDPBroker:
             except Exception as e:
                 print "received data not json ,parse failure.",data,str(e)
                 
-                
             time.sleep(3)
-            nodes={"nodes": self.registry._addrs}
+            nodes={"nodes": self.registry._nodes}
             self.registry.notify_all(json.dumps(nodes))
             
 
