@@ -1,6 +1,7 @@
 import socket
 import json
 import time
+from stdnum.us import ptin
 
 class Registry:
     def __init__(self,_socket=None):
@@ -10,7 +11,7 @@ class Registry:
     def notify_all(self,data):
         for i,r in enumerate(self._addrs):
             try:
-                self._socket.sendto(data,r)
+                self._socket.sendto(data,r['public'])
             except Exception as e:
                 print "notify address failure",r,str(e)
                 self._addrs.pop(i)
@@ -19,19 +20,23 @@ class Registry:
     
 
                 
-    def add_node(self,address):
-        _node=self.find_node(address)
+    def add_node(self,public_address,private_address):
+        _node=self.find_node(public_address)
         if _node:
             return
 
-        print "new node added .",address
-        self._addrs.append(address)
+        print "new node added .",public_address,private_address
+        self._addrs.append({"public":public_address,'private':private_address})
         
     
     def find_node(self,address):
-        for r in self._addrs:
-            if r[0]==address[0] and r[1]==address[1]:
-                return r
+        for i,r in enumerate(self._addrs):
+            if r['public'][0]==address[0] and r['public'][1]==address[1]:
+                return i
+    def update_node(self,public,private_addr):
+        i=self.find_node(public)
+        self._addrs[i]['private']=tuple(private_addr)
+        
              
 
 class MyUDPBroker:
@@ -45,12 +50,17 @@ class MyUDPBroker:
         while True:
             data,address=self._socket.recvfrom(1024)
             self.registry.add_node(address)
-            self._socket.sendto(json.dumps({"data":"pong","from":"server"}),address)
+            self._socket.sendto(json.dumps({"data":"pong","from":"server","your_address":list(address)}),address)
+            try:
+                d=json.loads(data)
+                if d.get("private"):
+                    self.registry.update_node(address,d['private'])
+            except Exception as e:
+                print "parse received data failure",data,str(e)
+                
+                
             time.sleep(3)
-            notification={"address":list(address),"from":"node","data":data}
-            self.registry.notify_all(json.dumps(notification))
-            time.sleep(3)
-            nodes={"nodes":[list(r) for r in self.registry._addrs]}
+            nodes={"nodes": self.registry._addrs}
             self.registry.notify_all(json.dumps(nodes))
             
             
