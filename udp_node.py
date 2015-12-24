@@ -20,14 +20,12 @@ class Node:
         self._public_address=None
         self._local_address=(self._get_ip(),local_port)
         self._connect_another_node=False
-        print "Node init finished."
+        print "Node init finished.",self._broker_address,self._local_address
         
     def _get_ip(self):
-        print "Fetching self ip ."
         public_host=socket.gethostbyname('baidu.com')
         s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((public_host,80))
-        print "Successfully get self ip ."
         return s.getsockname()[0]
    
         
@@ -37,19 +35,17 @@ class Node:
         
         while True:
             if not self._connect_another_node:
-                print "trying to join server..."
+                print "Trying to join p2p..."
                 self._socket.sendto(json.dumps({"from":"node","data":"join"}),self._broker_address)
                 
                 self._socket.sendto(json.dumps({"from":"node","private":self._local_address}),self._broker_address)
             
             data,address=self._socket.recvfrom(2048)
             if address[0]==self._broker_address[0]:
-                print "received from server",data
                 try:
                     data=json.loads(data)
                 except:
-                    print "data not json "
-                    continue
+                    print "data not json ",data
                     
                 if isinstance(data,dict):
                     if data.get("address") and not self._public_address:
@@ -58,15 +54,16 @@ class Node:
 
                     if data.get("nodes"):
                         if len(data['nodes'])>1:
-                            print "Get nodes more than one",data['nodes']
+                            print "Get nodes:",data['nodes']
                             for n in data['nodes']:
                                 if not self._public_address:
                                     print "self public address not init."
                                     continue
+                                
                                 if str(n['public'])!=str(list(self._public_address)):
-                                    self._socket.sendto("Nice to meet U!- %s:%s"%(str(self._local_address),str(self._public_address)),tuple(n['public']))
+                                    self._socket.sendto("To %s,\nNice to meet U! \n-From %s:%s"%(str(address),str(self._local_address),str(self._public_address)),tuple(n['public']))
                                     if n['private']: 
-                                        self._socket.sendto("Nice to meet U!- %s:%s"%(str(self._local_address),str(self._public_address)),tuple(n['private']))        
+                                        self._socket.sendto("To %s,\nNice to meet U! \n-From %s:%s"%(str(address),str(self._local_address),str(self._public_address)),tuple(n['private']))        
                                                                     
                                                 
                         else:
@@ -74,9 +71,9 @@ class Node:
                         
                                 
             else:
-                print "received from  another node :",data
+                print "Received %s,%s\n"%(str(address),data)
 
-                self._socket.sendto("Nice to hear from U .  \nFrom:%s:%s"%(str(self._local_address),str(self._public_address)),address)
+                self._socket.sendto("Nice to hear from U . \nFrom %s:%s"%(str(self._local_address),str(self._public_address)),address)
                 self._connect_another_node=True
                 time.sleep(3)
             

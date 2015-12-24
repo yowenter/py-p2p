@@ -63,6 +63,8 @@ class MyUDPBroker:
         
     def run(self):
         gevent.spawn(lambda:ping_to_nodes(self))
+        gevent.spawn(lambda:publish_nodes(self))
+        
         while True:
             data,address=self._socket.recvfrom(1024)
             self._socket.sendto(json.dumps({"data":"pong","from":"server","address":address}),address)
@@ -71,14 +73,13 @@ class MyUDPBroker:
                 d=json.loads(data)
                 if d.get("data")=='join' and d.get("from")=='node':
                     self.registry.add_node(address)
+                    publish_nodes(self)
                 if d.get("private"):
                     self.registry.update_node(address,d['private'])
             except Exception as e:
                 print "received data not json ,parse failure.",data,str(e)
                 
-            time.sleep(3)
-            nodes={"nodes": self.registry._nodes}
-            self.registry.notify_all(json.dumps(nodes))
+
             
 
 def ping_to_nodes(broker):
@@ -86,7 +87,13 @@ def ping_to_nodes(broker):
     while True:
         broker.registry.notify_all(json.dumps({"from":"server","data":"ping"}))
         time.sleep(6)
-        
+    
+def publish_nodes(broker):
+    while True:
+        nodes={"nodes": broker.registry._nodes}
+        broker.registry.notify_all(json.dumps(nodes)) 
+        time.sleep(120)
+           
             
 if __name__=='__main__':
     server_port=8001
