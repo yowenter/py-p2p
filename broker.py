@@ -71,7 +71,8 @@ def handle_connection(registry,connection,address):
         print "received",data 
         connection.sendall("I AM SERVER.\n")
         time.sleep(3)
-        registry.notify_all(data)
+        notification="Address:%s\nDATA:%s"%(str(address),data)
+        registry.notify_all(notification)
         
     
 if __name__=='__main__':
