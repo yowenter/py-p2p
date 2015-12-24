@@ -74,7 +74,6 @@ class MyUDPBroker:
                 d=json.loads(data)
                 if d.get("data")=='join' and d.get("from")=='node':
                     self.registry.add_node(address)
-                    publish_nodes(self)
                 if d.get("private"):
                     self.registry.update_node(address,d['private'])
             except Exception as e:
