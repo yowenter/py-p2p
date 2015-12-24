@@ -37,6 +37,7 @@ class Node:
         
         while True:
             if not self._connect_another_node:
+                print "trying to join server..."
                 self._socket.sendto(json.dumps({"from":"node","data":"join"}),self._broker_address)
                 
                 self._socket.sendto(json.dumps({"from":"node","private":self._local_address}),self._broker_address)

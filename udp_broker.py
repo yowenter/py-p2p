@@ -66,7 +66,7 @@ class MyUDPBroker:
         while True:
             data,address=self._socket.recvfrom(1024)
             self._socket.sendto(json.dumps({"data":"pong","from":"server","address":address}),address)
-            self._registry.heartbeat_node(address)
+            self.registry.heartbeat_node(address)
             try:
                 d=json.loads(data)
                 if d.get("data")=='join' and d.get("from")=='node':
