@@ -35,7 +35,7 @@ class Registry:
                 return i
             
     def update_node(self,public,private_addr):
-        i=self.find_node(public)
+        i=self.find_node_index(public)
         self._addrs[i]['private']=tuple(private_addr)
         
              

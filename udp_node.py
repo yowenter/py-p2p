@@ -20,7 +20,6 @@ class Node:
             self._socket.sendto(json.dumps({"from":"node","data":"ping"}),self._broker_address)
             self._local_address=self._socket.getsockname()
             self._public_address=None
-            print "local_address ",self._local_address
             self._socket.sendto(json.dumps({"from":"node","private":self._local_address}),self._broker_address)
             data,address=self._socket.recvfrom(2048)
             if address[0]==self._broker_address[0]:
