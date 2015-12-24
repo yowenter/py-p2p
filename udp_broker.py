@@ -20,7 +20,7 @@ class Registry:
     
 
                 
-    def add_node(self,public_address,private_address):
+    def add_node(self,public_address,private_address=None):
         _node=self.find_node(public_address)
         if _node:
             return
