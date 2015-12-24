@@ -2,6 +2,7 @@ import socket
 import os
 import json
 import time
+import gevent
 SERVER_IP=os.getenv("SERVER_IP")
 SERVER_PORT=os.getenv("SERVER_PORT")
 
@@ -26,7 +27,7 @@ class Node:
     def connect_server(self):
         while True:
             if not self._connect_another_node:
-                self._socket.sendto(json.dumps({"from":"node","data":"ping"}),self._broker_address)
+                self._socket.sendto(json.dumps({"from":"node","data":"join"}),self._broker_address)
                 
                 self._socket.sendto(json.dumps({"from":"node","private":self._local_address}),self._broker_address)
             
@@ -37,40 +38,48 @@ class Node:
                     data=json.loads(data)
                 except:
                     print "data not json "
+                    continue
                     
                 if isinstance(data,dict):
-                    if data.get("your_address") and not self._public_address:
-                        self._public_address=tuple(data['your_address'])
+                    if data.get("address") and not self._public_address:
+                        print "Get self public address",data['address']
+                        self._public_address=tuple(data['address'])
 
                     if data.get("nodes"):
                         if len(data['nodes'])>1:
-                            print "nodes more than one",data['nodes']
+                            print "Get nodes more than one",data['nodes']
                             for n in data['nodes']:
                                 if not self._public_address:
-                                    print "self public address not fetch."
+                                    print "self public address not init."
                                     continue
                                 if str(n['public'])!=str(list(self._public_address)):
                                     self._socket.sendto("Nice to meet U!- %s:%s"%(str(self._local_address),str(self._public_address)),tuple(n['public']))
-                                    self._socket.sendto("Nice to meet U!- %s:%s"%(str(self._local_address),str(self._public_address)),tuple(n['private']))                                        
+                                    if n['private']: 
+                                        self._socket.sendto("Nice to meet U!- %s:%s"%(str(self._local_address),str(self._public_address)),tuple(n['private']))        
+                                                                    
                                                 
                         else:
-                            time.sleep(5)
                             continue
                         
                                 
             else:
-                print "connected to another node!!! received",data
-                while True:
+                print "received from  another node :",data
 
-                    self._socket.sendto("Nice to meet U!- %s:%s"%(str(self._local_address),str(self._public_address)),address)
+                self._socket.sendto("Nice to hear from U .  \nFrom:%s:%s"%(str(self._local_address),str(self._public_address)),address)
+                self._connect_another_node=True
+            
+            gevent.spawn(lambda :ping_to_server(self))
 
-                    time.sleep(3)
-                    data,address=self._socket.recvfrom(1024)
-                    print "received ",data,address
-                    self._connect_another_node=True
 
+def ping_to_server(node):
+    while True:
+        node._socket.sendto(json.dumps({"from":"node","data":"ping"}),node._broker_address)
+        time.sleep(6)
+        
+        
+        
 if __name__=='__main__':
-    n=Node(SERVER_IP,SERVER_PORT,7082)   
+    n=Node(SERVER_IP,SERVER_PORT,4462)   
     n.connect_server()       
                     
             

@@ -50,14 +50,15 @@ class MyUDPBroker:
     def run(self):
         while True:
             data,address=self._socket.recvfrom(1024)
-            self.registry.add_node(address)
-            self._socket.sendto(json.dumps({"data":"pong","from":"server","your_address":list(address)}),address)
+            self._socket.sendto(json.dumps({"data":"pong","from":"server","address":address}),address)
             try:
                 d=json.loads(data)
+                if d.get("data")=='join' and d.get("from")=='node':
+                    self.registry.add_node(address)
                 if d.get("private"):
                     self.registry.update_node(address,d['private'])
             except Exception as e:
-                print "parse received data failure",data,str(e)
+                print "received data not json ,parse failure.",data,str(e)
                 
                 
             time.sleep(3)
