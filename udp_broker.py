@@ -12,7 +12,7 @@ class Registry:
         self._socket=_socket
     
     def notify_all(self,data):
-        for n in enumerate(self._nodes):
+        for n in self._nodes:
             self._socket.sendto(data,n['public'])
             
     
