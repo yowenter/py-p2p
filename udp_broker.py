@@ -21,18 +21,19 @@ class Registry:
 
                 
     def add_node(self,public_address,private_address=None):
-        _node=self.find_node(public_address)
-        if _node:
+        _node=self.find_node_index(public_address)
+        if _node is not None:
             return
 
         print "new node added .",public_address,private_address
         self._addrs.append({"public":public_address,'private':private_address})
         
     
-    def find_node(self,address):
+    def find_node_index(self,public_address):
         for i,r in enumerate(self._addrs):
-            if r['public'][0]==address[0] and r['public'][1]==address[1]:
+            if str(r['public'][0])==str(public_address[0]) and str(r['public'][1])==str(public_address[1]):
                 return i
+            
     def update_node(self,public,private_addr):
         i=self.find_node(public)
         self._addrs[i]['private']=tuple(private_addr)
