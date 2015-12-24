@@ -48,6 +48,9 @@ class Node:
                     print "data not json ",data
                     
                 if isinstance(data,dict):
+                    if data.get("data")=="ping":
+                        print "received server ping"
+                        
                     if data.get("address") and not self._public_address:
                         print "Get self public address",data['address']
                         self._public_address=tuple(data['address'])
