@@ -69,9 +69,9 @@ def handle_connection(registry,connection,address):
     while True:
         data = connection.recv(1024)
         print "received",data 
-        connection.sendall("I AM SERVER.\n")
+        connection.sendall("pong\n")
         time.sleep(3)
-        notification="Address:%s\nDATA:%s"%(str(address),data)
+        notification="Address:%s|||DATA:%s\n"%(str(address),data)
         registry.notify_all(notification)
         
     
