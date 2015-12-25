@@ -64,7 +64,7 @@ class Node:
                                     print "self public address not init."
                                     continue
                                 
-                                if str(n['public'])!=str(list(self._public_address)):
+                                if str(n['public'][0])!=str(list(self._public_address)[0]):
                                     self._socket.sendto("To %s,\nNice to meet U! \n-From %s:%s"%(str(address),str(self._local_address),str(self._public_address)),tuple(n['public']))
                                 if n['private'] and str(n['private'])!=str(list(self._local_address)): 
                                     self._socket.sendto("To %s,\nNice to meet U! \n-From %s:%s"%(str(address),str(self._local_address),str(self._public_address)),tuple(n['private']))        
