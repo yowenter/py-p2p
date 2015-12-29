@@ -1,9 +1,22 @@
+import logging
 import socket
 import json
 import time
 import gevent.monkey
 
 gevent.monkey.patch_all()
+logger = logging.getLogger('udp_broker')
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler('udp_broker.log')
+fh.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh.setFormatter(formatter)
+ch.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(fh)
+logger.addHandler(ch)
 
 
 class Registry:
@@ -40,7 +53,7 @@ class Registry:
             self.heartbeat_node(public_address)
             return
 
-        print "new node added .",public_address,private_address
+        logger.info( "new node added .%s %s",public_address,private_address)
         self._nodes.append({"public":public_address,'private':private_address,"latest_heartbeat":int(time.time())})
         
     
@@ -52,7 +65,7 @@ class Registry:
     def update_node(self,public,private_addr):
         i=self.find_node_index(public)
         self._nodes[i]['private']=tuple(private_addr)
-        print "Node updated ",self._nodes[i]
+        logger.info("Node updated %s",self._nodes[i])
         self.heartbeat_node(public)
              
 
@@ -80,13 +93,13 @@ class MyUDPBroker:
                 if d.get("private"):
                     self.registry.update_node(address,d['private'])
             except Exception as e:
-                print "received data not json ,parse failure.",data,str(e)
+                logger.error("received data not json ,parse failure.%s %s",data,str(e))
                 
 
             
 
 def ping_to_nodes(broker):
-    print "Start to ping nodes every few seconds."
+    logger.info("Start to ping nodes every few seconds.")
     while True:
         broker.registry.notify_all(json.dumps({"from":"server","data":"ping"}))
         time.sleep(6)
@@ -101,7 +114,7 @@ def ping_to_nodes(broker):
             
 if __name__=='__main__':
     server_port=8001
-    print "Starting Listen...",server_port
+    logger.info("Starting Listen...%s",server_port)
     udp_broker=MyUDPBroker('',server_port,Registry())
     udp_broker.run()
     
