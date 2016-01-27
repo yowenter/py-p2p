@@ -1,3 +1,4 @@
+#-*-encoding:utf-8-*-
 import logging
 import socket
 import json
@@ -114,7 +115,7 @@ def ping_to_nodes(broker):
             
 if __name__=='__main__':
     server_port=8001
-    logger.info("Starting Listen...%s",server_port)
+    logger.info("开始监听...%s",server_port)
     udp_broker=MyUDPBroker('',server_port,Registry())
     udp_broker.run()
     
