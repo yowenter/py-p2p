@@ -13,17 +13,4 @@
 ###reference
 p2pnat[http://www.bford.info/pub/net/p2pnat/]
     
-      
-####
-###
-####
 
-###public not publish
-#### not publish 3
-###yo published!!
-
-
-##ci
-###
-
-###daa
